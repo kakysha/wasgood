@@ -1,0 +1,129 @@
+{% import (
+	"wasgood/app"
+	"github.com/gin-gonic/gin"
+	"wasgood/models"
+) %}
+
+{% func url(path string) %}{%s app.RootURL %}{%s path %}{% endfunc %}
+
+{% func header(c *gin.Context, p *Page) %}
+
+{% code	user := models.GetUserFromContext(c) %}
+<!doctype html>
+<head>
+  <meta charset="utf-8">
+		<title>{%s p.Title %} - {%s app.SiteName %}</title>
+		{% if p.Description != "" %}<meta name="description" content="{%s p.Description %}">{% endif %}
+		{% if p.Keywords != "" %}<meta name="keywords" content="{%s p.Keywords %}">{% endif %}
+		{% if p.OgImage != "" %}<meta name="og:image" content="{%s p.OgImage %}">{% endif %}
+
+		<link href="https://fonts.googleapis.com/css?family=Roboto:400,700&subset=cyrillic" rel="stylesheet">
+
+		<link rel="stylesheet" href="{%= url("/css/uikit.css") %}" />
+		<link rel="stylesheet" href="{%= url("/css/components/search.css") %}" />
+		<link rel="stylesheet" href="{%= url("/css/components/slidenav.css") %}" />
+
+		<link rel="stylesheet" href="{%= url("/css/style.css") %}" />
+
+		<link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
+		<link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
+		<link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
+		<link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
+		<link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
+		<link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
+		<link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
+		<link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
+		<link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
+		<link rel="icon" type="image/png" sizes="192x192"  href="/android-icon-192x192.png">
+		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+		<link rel="manifest" href="/manifest.json">
+		<meta name="msapplication-TileColor" content="#ffffff">
+		<meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+		<meta name="theme-color" content="#ffffff">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<!--[if lt IE 9]>
+			<script src="http://css3-mediaqueries-js.googlecode.com/svn/trunk/css3-mediaqueries.js"></script>
+		<![endif]-->
+		<!--[if lt IE 9]>
+			<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+		<![endif]-->
+</head>
+<body {% if user != nil %}data-user-id="{%d user.ID %}"{% endif %}>
+
+{% if user == nil %}
+<div class="popup uk-panel uk-panel-box uk-grid uk-grid-collapse uk-flex-space-between">
+	<div class="uk-panel-title">Чтобы голосовать, авторизуйтесь:</div>
+	<div class="login-vk uk-width-1-2 uk-text-center">
+		<a class="uk-button uk-button-primary" href="{%= url("/auth/vk/login") %}?redirect={%u c.Request.URL.String() %}" title="Sign in with VK">
+			Войти через <i class="uk-icon-vk"></i>
+		</a>
+	</div>
+	<div class="login-fb uk-width-1-2 uk-text-center">
+		<a class="uk-button uk-button-primary" href="{%= url("/auth/fb/login") %}?redirect={%u c.Request.URL.String() %}" title="Sign in with Facebook">
+			Войти через <i class="uk-icon-facebook-square"></i>
+		</a>
+	</div>
+</div>
+{% endif %}
+
+{% for _, flash := range p.Flashes %}
+<div class="uk-alert uk-alert-large uk-notify uk-notify-top-center" data-uk-alert="">
+	<a class="uk-alert-close uk-close"></a>
+	<p><strong>OK</strong> - {%s flash.(string) %}</p>
+</div>
+{% endfor %}
+
+<div class="uk-container uk-container-center">
+	<div class="header uk-grid uk-flex uk-margin-top uk-grid-small">
+		<div class="uk-width-1-10 logo uk-hidden-small"><a href="{%= url("") %}"><img src="{%= url("/apple-icon-72x72.png") %}"/></a></div>
+		<div class="uk-width-2-10 sitename uk-h1"><a href="{%= url("/") %}" class="no-decoration">{%s app.SiteName %}</a></div>
+		{% if user != nil %}
+		<div class="user uk-width-8-10 uk-width-medium-3-10 uk-push-4-10">
+			<div class="photo uk-align-right"><img src="{%s user.Photo %}"></div>
+			<div class="uk-align-right uk-text-right">
+				<div class="username">{%s user.Name %}</div>
+				<div class="logout uk-text-small uk-text-muted"><a href="{%= url("/auth/logout") %}?redirect={%u c.Request.URL.String() %}">Выход</a></div>
+				{% if user.Provider == models.VK %}
+					<div class="toombler uk-text-small">расшаривать в <i class="uk-icon-vk"></i> <input name="sharing" type="checkbox" class="local" checked></div>
+				{% endif %}
+			</div>
+		</div>
+		{% else %}
+		<div class="uk-width-8-10 uk-width-medium-3-10 uk-push-4-10 uk-flex uk-flex-right">
+			<div class="login-vk">
+				<a class="uk-button uk-button-primary" href="{%= url("/auth/vk/login") %}?redirect={%u c.Request.URL.String() %}" title="Sign in with VK">
+					Войти <span class="uk-hidden-small">через</span> <i class="uk-icon-vk"></i>
+				</a>
+			</div>
+			<div class="login-fb uk-hidden">
+				<a class="uk-button uk-button-primary" href="{%= url("/auth/fb/login") %}?redirect={%u c.Request.URL.String() %}" title="Sign in with Facebook">
+					Войти через <i class="uk-icon-facebook-square"></i>
+				</a>
+			</div>
+		</div>
+		{% endif %}
+		<div class="uk-width-1-1 uk-width-medium-4-10 uk-pull-3-10 search">
+			<form class="uk-search" data-uk-search action="{%= url("/search") %}" method="GET">
+				<div class="uk-grid uk-grid-small">
+					<div class="uk-width-4-5 uk-autocomplete" data-uk-dropdown="{justify:'.uk-search-field', mode:'none'}" data-uk-autocomplete>
+						<input class="uk-search-field" name="q" type="search" placeholder="жидкость, бренд или вкус..." pattern=".{3,}" required title="мин 3 символа">
+						<div class="uk-dropdown ajax-search-results"></div>
+					</div>
+					<div class="uk-width-1-5">
+						<input type="submit" class="uk-button" value="поиск">
+					</div>
+				</div>
+
+			</form>
+		</div>
+	</div>
+	<nav class="uk-navbar uk-width-1-1 uk-flex uk-flex-center uk-margin">
+		<ul class="uk-navbar-nav">
+			<li data-active class="uk-margin-right"><a href="{%= url("/rating/good") %}">Лучшие</a></li>
+			<li data-active><a href="{%= url("/rating/bad") %}">Худшие</a></li>
+		</ul>
+	</nav>
+{% endfunc %}

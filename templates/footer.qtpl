@@ -1,0 +1,66 @@
+{% import (
+	"github.com/gin-gonic/gin"
+	"wasgood/models"
+	"wasgood/app"
+	"time"
+) %}
+
+{% func footer(c *gin.Context, p *Page) %}
+{% code 
+	user := models.GetUserFromContext(c) 
+	year := time.Now().Year()
+%}
+<div class="uk-margin uk-flex uk-flex-space-between footer">
+	<div class="copyright uk-text-muted">
+	© {%d year %}, {%s app.SiteName %}
+	</div>
+	<div class="social">
+	обсуждение и общение - <a href="https://vk.com/nezashlo" class="uk-text-bold" target="_blank"><i class="uk-icon-vk"></i>/nezashlo</a>
+	</div>
+</div>
+</div> <!-- container -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+<script src="{%= url("/js/jquery.popupoverlay.js") %}"></script>
+<script src="{%= url("/js/js.cookie.js") %}"></script>
+<script src="{%= url("/js/uikit.js") %}"></script>
+<script defer src="{%= url("/js/functions.js") %}"></script>
+<script src="{%= url("/js/components/search.js") %}"></script>
+<script src="{%= url("/js/components/lightbox.js") %}"></script>
+<script src="{%= url("/js/components/autocomplete.js") %}"></script>
+{% if user != nil && user.Provider == models.VK %}
+<div id="vk_api_transport"></div>
+<script type="text/javascript">
+window.vkAsyncInit = function() {
+	VK.init({
+		apiId: 5589322
+	});
+	posttowall = function(message, attachments) {
+		VK.api('wall.post', {
+			message: message,
+			attachments: attachments
+		}, function(r) {});
+	}
+};
+
+setTimeout(function() {
+	var el = document.createElement("script");
+	el.type = "text/javascript";
+	el.src = "//vk.com/js/api/openapi.js";
+	el.async = true;
+	document.getElementById("vk_api_transport").appendChild(el);
+}, 0);
+</script>
+{% endif %}
+<!-- Yandex.Metrika counter --> <script type="text/javascript"> (function (d, w, c) { (w[c] = w[c] || []).push(function() { try { w.yaCounter40458210 = new Ya.Metrika({ id:40458210, clickmap:true, trackLinks:true, accurateTrackBounce:true, webvisor:true }); } catch(e) { } }); var n = d.getElementsByTagName("script")[0], s = d.createElement("script"), f = function () { n.parentNode.insertBefore(s, n); }; s.type = "text/javascript"; s.async = true; s.src = "https://mc.yandex.ru/metrika/watch.js"; if (w.opera == "[object Opera]") { d.addEventListener("DOMContentLoaded", f, false); } else { f(); } })(document, window, "yandex_metrika_callbacks"); </script> <noscript><div><img src="https://mc.yandex.ru/watch/40458210" style="position:absolute; left:-9999px;" alt="" /></div></noscript> <!-- /Yandex.Metrika counter -->
+
+<!-- Vegetatika.ru tracker -->
+<script type="text/javascript">
+(function(d,b,ce,ac) {
+var a=d[ce]("script");a.type="text/javascript";a.async=!0;
+a.src="//vegetatika.ru/t.js";d[b][ac](a);
+})(document,"body","createElement","appendChild");
+</script>
+<!-- /Vegetatika.ru tracker -->
+</body>
+</html>
+{% endfunc %}

@@ -1,0 +1,160 @@
+{% import (
+	"wasgood/app"
+	"github.com/gin-gonic/gin"
+	"wasgood/models"
+) %}
+
+{% func url(path string) %}{%s app.RootURL %}{%s path %}{% endfunc %}
+
+{% func header(c *gin.Context) %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Admin</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="description" content="Admin panel">
+
+	<!-- The styles -->
+	<link id="bs-css" href="{%= url("/admin/css/bootstrap-classic.css") %}" rel="stylesheet">
+	<style type="text/css">
+	  body {
+		padding-bottom: 40px;
+	  }
+	  .sidebar-nav {
+		padding: 9px 0;
+	  }
+	</style>
+	<link href="{%= url("/admin/css/bootstrap-responsive.css") %}" rel="stylesheet">
+	<link href="{%= url("/admin/css/charisma-app.css") %}" rel="stylesheet">
+	<link href="{%= url("/admin/css/jquery-ui-1.8.21.custom.css") %}" rel="stylesheet">
+	<link href="{%= url("/admin/css/fullcalendar.css") %}" rel='stylesheet'>
+	<link href="{%= url("/admin/css/fullcalendar.print.css") %}" rel='stylesheet'  media='print'>
+	<link href="{%= url("/admin/css/chosen.css") %}" rel='stylesheet'>
+	<link href="{%= url("/admin/css/uniform.default.css") %}" rel='stylesheet'>
+	<link href="{%= url("/admin/css/colorbox.css") %}" rel='stylesheet'>
+	<link href="{%= url("/admin/css/jquery.cleditor.css") %}" rel='stylesheet'>
+	<link href="{%= url("/admin/css/jquery.noty.css") %}" rel='stylesheet'>
+	<link href="{%= url("/admin/css/noty_theme_default.css") %}" rel='stylesheet'>
+	<link href="{%= url("/admin/css/elfinder.min.css") %}" rel='stylesheet'>
+	<link href="{%= url("/admin/css/elfinder.theme.css") %}" rel='stylesheet'>
+	<link href="{%= url("/admin/css/jquery.iphone.toggle.css") %}" rel='stylesheet'>
+	<link href="{%= url("/admin/css/opa-icons.css") %}" rel='stylesheet'>
+	<link href="{%= url("/admin/css/uploadify.css") %}" rel='stylesheet'>
+	<link href="{%= url("/admin/css/jquery.tagit.css") %}" rel='stylesheet'>
+	<link href="{%= url("/admin/css/wysihtml5.css") %}" rel='stylesheet'>
+
+	<!-- The HTML5 shim, for IE6-8 support of HTML5 elements -->
+	<!--[if lt IE 9]>
+	  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<!-- The fav icon -->
+	<link rel="shortcut icon" href="{%= url("/admin/img/favicon.ico") %}">
+		
+</head>
+
+<body>
+	<div id="cleditor-panel" style="display:none;">
+		<li data-wysihtml5-command="formatBlock" data-wysihtml5-command-value="p">¶</li>
+		<li data-wysihtml5-command="formatBlock" data-wysihtml5-command-value="h1">H1</li>
+		<li data-wysihtml5-command="formatBlock" data-wysihtml5-command-value="h2">H2</li>
+		<li data-wysihtml5-command="formatBlock" data-wysihtml5-command-value="h3">H3</li>
+		<li data-wysihtml5-command="formatBlock" data-wysihtml5-command-value="h4">H4</li>
+	  <li data-wysihtml5-command="formatInline" data-wysihtml5-command-value="strong" class="icon-bold"> </li>
+	  <li data-wysihtml5-command="formatInline" data-wysihtml5-command-value="i" class="icon-italic"> </li>
+	  <li data-wysihtml5-command="formatInline" data-wysihtml5-command-value="u" style="text-decoration:underline;">U</li>
+	  <li data-wysihtml5-command="insertUnorderedList" class="icon-th-list" title="list"> </li>
+	  <li data-wysihtml5-command="createLink" class="icon-hand-up" title="link"> </li>
+	  <div data-wysihtml5-dialog="createLink" style="display: none;">
+	    <label>
+	      Link:
+	      <input data-wysihtml5-dialog-field="href" value="http://" class="text">
+	    </label>
+	    <a data-wysihtml5-dialog-action="save">OK</a> <a data-wysihtml5-dialog-action="cancel">Cancel</a>
+	  </div>
+	  <li data-wysihtml5-command="insertImage" class="icon-picture"> </li>
+	  	<div data-wysihtml5-dialog="insertImage" style="display: none;">
+			<label>
+				Image:
+				<input data-wysihtml5-dialog-field="src" value="http://">
+			</label>
+			<a data-wysihtml5-dialog-action="save">OK</a>&nbsp;<a data-wysihtml5-dialog-action="cancel">Cancel</a>
+		</div>
+		<li data-wysihtml5-action="change_view">HTML</li>
+	</div>
+
+	<!-- topbar starts -->
+	<div class="navbar">
+		<div class="navbar-inner">
+			<div class="container-fluid">
+				<a class="btn btn-navbar" data-toggle="collapse" data-target=".top-nav.nav-collapse,.sidebar-nav.nav-collapse">
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</a>
+				<a class="brand" href="{%= url("/admin") %}"> Admin <img src="{%s models.GetUserFromContext(c).Photo %}"/></a>
+				
+				<div class="pull-right" style="line-height: 40px">
+					По любым вопросам обращайтесь в <a href="https://vk.com/nezashlo" target="_blank">vk.com/nezashlo</a>
+				</div>
+				{% comment %}
+				<!-- user dropdown starts -->
+				<div class="btn-group pull-right" >
+					<a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+						<i class="icon-user"></i><span class="hidden-phone"> admin</span>
+						<span class="caret"></span>
+					</a>
+					<ul class="dropdown-menu">
+						<li><a href="{%= url("/admin/login") %}">Logout</a></li>
+					</ul>
+				</div>
+				<!-- user dropdown ends -->
+				
+				<div class="top-nav nav-collapse">
+					<ul class="nav">
+						<li>
+							<form class="navbar-search pull-left" action="{%= url("/admin/search") %}" method="post">
+								<input placeholder="Артикул" class="search-query span2" name="query" type="text">
+							</form>
+						</li>
+					</ul>
+				</div><!--/.nav-collapse -->
+				{% endcomment %}
+			</div>
+		</div>
+	</div>
+	<!-- topbar ends -->
+	
+	<div class="container-fluid">
+		<div class="row-fluid">		
+			<!-- left menu starts -->
+			<div class="span2 main-menu-span">
+				<div class="well nav-collapse sidebar-nav">
+					<ul class="nav nav-tabs nav-stacked main-menu">
+						<li><a class="ajax-link" href="{%= url("/admin/liquids/1") %}"><i class="icon-tint"></i><span class="hidden-tablet"> Liquid</span></a>
+							<ul class="nav nav-pills nav-stacked">
+								<li><a class="ajax-link" href="{%= url("/admin/liquids/new") %}"><i class="icon-plus-sign"></i><span class="hidden-tablet"> Add Liquid</span></a></li>
+							</ul>
+						</li>
+						<li><a class="ajax-link" href="{%= url("/admin/reviews") %}"><i class="icon-comment"></i><span class="hidden-tablet"> Reviews</span></a></li>
+						<li><a class="ajax-link" href="{%= url("/admin/tags") %}"><i class="icon-tags"></i><span class="hidden-tablet"> Tags</span></a></li>
+					</ul>
+				</div><!--/.well -->
+			</div><!--/span-->
+			<!-- left menu ends -->
+			
+			<noscript>
+				<div class="alert alert-block span10">
+					<h4 class="alert-heading">Warning!</h4>
+					<p>You need to have <a href="http://en.wikipedia.org/wiki/JavaScript" target="_blank">JavaScript</a> enabled to use this site.</p>
+				</div>
+			</noscript>
+			
+			<div id="content" class="span10">
+			<!-- content starts -->
+			
+			<div class="row-fluid">
+				<div class="box span12">
+					<div class="box-content">
+{% endfunc %}

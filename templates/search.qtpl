@@ -1,0 +1,152 @@
+{% import (
+	"github.com/gin-gonic/gin"
+	"wasgood/models"
+) %}
+
+{% code
+	type SearchResultsPage struct {
+		Page
+		Brands map[int]*models.Tag
+		Flavors map[int]*models.Tag
+		Items []*models.Item
+		PageNum int
+		IsLastPage bool
+	}
+%}
+
+{% func searchTagBlock(tag *models.Tag, field string) %}
+<div class="uk-width-medium-1-6 uk-width-1-3">
+	<figure class="uk-overlay uk-overlay-hover">
+		<img class="uk-overlay-scale" src="{% if tag.Logo != "" %}{%s tag.Logo %}{% else %}{%= url("/images/bottle-200x200.png") %}{% endif %}" alt="{%s tag.Name %}">
+		<div class="uk-overlay-panel uk-overlay-background uk-overlay-bottom uk-ignore">
+			<p>{%s tag.Name %}</p>
+		</div>
+		<a class="uk-position-cover" href="{%= url("/"+field+"/") %}{%s tag.Slug %}"></a>
+	</figure>
+</div>
+{% endfunc %}
+
+{% func searchTagBlockRow(tag *models.Tag, field string) %}
+<li><a class="uk-grid uk-grid-small uk-flex-middle uk-overflow-hidden tag" href="{%= url("/"+field+"/") %}{%s tag.Slug %}">
+	<div class="uk-width-1-6 thumbnail">
+		<img src="{% if tag.Logo != "" %}{%s tag.Logo %}{% else %}{%= url("/images/bottle-200x200.png") %}{% endif %}" alt="{%s tag.Name %}" class="uk-border-rounded" />
+	</div>
+	<div class="uk-width-3-6">
+		<div class="uk-h4 uk-text-bold no-decoration">
+			{%s tag.Name %}
+		</div>
+	</div>
+	<div class="uk-width-2-6 uk-text-center">{% if field == "brand" %}бренд{% elseif field == "flavor" %}вкус{% endif %}</div>
+</a></li>
+{% endfunc %}
+
+{% func condensedItemBlock(item *models.Item) %}
+<li><a class="uk-grid uk-grid-small uk-flex-middle uk-overflow-hidden item {% if item.Hidden %}hidden{% endif %}" data-item-id="{%d item.ID %}" title="{%s item.Brand.Name %} / {%s item.Name %}"
+	href="{%= url("/liquids/") %}{%d item.ID %}-{%s item.Slug() %}">
+	<div class="uk-width-1-6 thumbnail">
+		<img src="{% if len(item.Images) > 0 %}{%s item.Images[0] %}{% else %}{%= url("/images/bottle-200x200.png") %}{% endif %}" alt="{%s item.Brand.Name %} / {%s item.Name %}" class="uk-border-rounded" />
+	</div>
+	<div class="uk-width-3-6">
+		<div class="uk-h4 uk-text-bold no-decoration name">
+			{%s item.Name %}
+		</div>
+		<div>
+			<span class="uk-text-muted">от</span>
+			<span class="brand">
+				{%s item.Brand.Name %}
+			</span>
+		</div>
+	</div>
+	<div class="uk-width-2-6 uk-text-center">жидкость</div>
+</a></li>
+{% endfunc %}
+
+{% func SearchResults(c *gin.Context, p *SearchResultsPage) %}
+{%= header(c, &p.Page) %}
+<div class="content">
+	{% if p.PageNum == 1 %}
+	<div class="uk-panel uk-panel-box uk-panel-header rating-list">
+		<div class="uk-panel-title">Бренды "{%s p.Page.Title %}"</div>
+		<div class="uk-grid uk-grid-match" data-uk-grid-margin>
+			{% for _, tag := range p.Brands %}
+				{%= searchTagBlock(tag, "brand") %}
+			{% endfor %}
+		</div>
+	</div>
+	{% endif %}
+	{% if p.PageNum == 1 %}
+	<div class="uk-panel uk-panel-box uk-panel-header rating-list">
+		<div class="uk-panel-title">Вкусы "{%s p.Page.Title %}"</div>
+		<div class="uk-grid uk-grid-match" data-uk-grid-margin>
+			{% for _, tag := range p.Flavors %}
+				{%= searchTagBlock(tag, "flavor") %}
+			{% endfor %}
+		</div>
+	</div>
+	{% endif %}
+	<div class="uk-panel uk-panel-box uk-panel-header rating-list">
+		<div class="uk-panel-title">Жидкости "{%s p.Page.Title %}"</div>
+		{% for _, item := range p.Items %}
+			{%= detailedItemBlock(item) %}
+		{% endfor %}
+	</div>
+	<div class="pagination uk-width-1-1 uk-button-group uk-margin-large" data-pagenum="{%d p.PageNum %}">
+		<button class="uk-button uk-width-1-3 prev" {% if p.PageNum == 1 %}disabled{% endif %}><i class="uk-icon-arrow-left"></i> предыдущая</button>
+		<button class="uk-button uk-width-1-3" disabled><span class="uk-hidden-small">страница </span>{%d p.PageNum %}</button>
+		<button class="uk-button uk-width-1-3 next" {% if p.IsLastPage %}disabled{% endif %}>следующая <i class="uk-icon-arrow-right"></i></button>
+	</div>
+</div>
+{%= footer(c, &p.Page) %}
+{% endfunc %}
+
+{% func AjaxSearchResults(c *gin.Context, p *SearchResultsPage) %}
+{% code 
+	var items = 0
+%}
+
+{% if len(p.Brands) > 0 %}
+<ul class="uk-list uk-margin-bottom-remove">
+	{% for _, tag := range p.Brands %}
+		{% if items == 5 %}
+			{% break %}
+		{% endif %}
+		{% code
+			items++
+		%}
+		{%= searchTagBlockRow(tag, "brand") %}
+	{% endfor %}
+</ul>
+{% endif %}
+
+{% if len(p.Brands) > 0 && (len(p.Flavors) > 0 || len(p.Items) > 0)%}<hr/>{% endif %}
+
+{% if len(p.Flavors) > 0 %}
+<ul class="uk-list uk-margin-bottom-remove">
+	{% for _, tag := range p.Flavors %}
+		{% if items == 10 %}
+			{% break %}
+		{% endif %}
+		{% code
+			items++
+		%}
+		{%= searchTagBlockRow(tag, "flavor") %}
+	{% endfor %}
+</ul>
+{% endif %}
+
+{% if len(p.Flavors) > 0 && len(p.Items) > 0 %}<hr/>{% endif %}
+
+{% if len(p.Items) > 0 %}
+<ul class="uk-list uk-margin-bottom-remove">
+	{% for _, item := range p.Items %}
+		{% if items == 15 %}
+			{% break %}
+		{% endif %}
+		{% code
+			items++
+		%}
+		{%= condensedItemBlock(item) %}
+	{% endfor %}
+</ul>
+{% endif %}
+{% endfunc %}

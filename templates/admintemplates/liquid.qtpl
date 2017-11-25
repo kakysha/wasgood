@@ -1,0 +1,64 @@
+{% import (
+	"wasgood/models"
+	"github.com/gin-gonic/gin"
+) %}
+
+{% func Liquid(c *gin.Context, item *models.Liquid) %}
+
+{%= header(c) %}
+
+<form data-type="json" class="form-horizontal" method="POST" enctype="multipart/form-data">
+	<fieldset>
+		<legend>
+			Liquid
+		</legend>
+		{%= itemPart(&item.Item) %}
+		<div class="span7">
+			<div class="control-group">
+				<label class="control-label">
+					<a href="{%= url("/admin/tags") %}">Flavors</a>
+				</label>
+				<div class="controls">
+					<select multiple data-rel="chosen" name="flavors[]" class="span7">
+						{% for _, flavor := range models.GetAllTagsForField("flavors") %}
+						<option value="{%d flavor.ID %}"
+						{% for _, iflavor := range item.Flavors %}
+							{% if flavor.ID == iflavor.ID %}
+								selected
+							{% endif %}
+						{% endfor %}
+						>{%s flavor.Name %}
+						</option>
+						{% endfor %}
+					</select>
+				</div>
+			</div>
+		</div>
+
+		<div class="form-actions span11">
+			<div class="span7">
+				<button type="submit" class="btn btn-primary">
+					Save changes
+				</button>
+			</div>
+			<div class="span2">
+				<span class="icon-arrow-left">
+				</span>
+				<a href="{%= url("/admin/liquids/") %}{%d item.ID-1 %}">
+					Prev
+				</a>
+			</div>
+			<div class="span2">
+				<a href="{%= url("/admin/liquids/") %}{%d item.ID+1 %}">
+					Next
+				</a>
+				<span class="icon-arrow-right">
+				</span>
+			</div>
+		</div>
+	</fieldset>
+</form>
+
+{%= footer(c) %}
+
+{% endfunc %}

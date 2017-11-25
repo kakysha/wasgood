@@ -1,0 +1,25 @@
+{% import (
+	"github.com/gin-gonic/gin"
+) %}
+
+{% func UnapprovedReviews(c *gin.Context, reviews map[int][]int) %}
+{%= header(c) %}
+<table class="table table-condensed">
+	<thead>
+		<tr><th>Item ID</th><th>Reviews IDs</th></tr>
+	</thead>
+	<tbody>
+	{% for itemID, reviewIDs := range reviews %}
+		<tr>
+			<td>{%d itemID %}</td>
+			<td class="center">
+				{% for _, ID := range reviewIDs %}
+					<a href="{%= url("/items/") %}{%d itemID %}#review-{%d ID %}">{%d ID %}</a> 
+				{% endfor %}
+			</td>
+		</tr>
+	{% endfor %}
+	</tbody>
+</table>
+{%= footer(c) %}
+{% endfunc %}

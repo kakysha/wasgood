@@ -1,0 +1,32 @@
+{% import (
+	"github.com/gin-gonic/gin"
+	"wasgood/models"
+) %}
+
+{% func Tags(c *gin.Context, tags map[int]*models.Tag) %}
+
+{%= header(c) %}
+
+<table class="table table-condensed">
+	<thead>
+		<tr><th>Tag ID</th><th>Name</th><th>Slug</th><th></th></tr>
+	</thead>
+	<tbody>
+	{% for _, tag := range tags %}
+		<tr>
+			<td>{%d tag.ID %}</td>
+			<td>{%s tag.Name %}</td>
+			<td>{%s tag.Slug %}</td>
+			<td class="center">
+				<a class="btn btn-success" href="{%= url("/admin/tags/") %}{%d tag.ID %}">
+					<i class="icon-edit icon-white"></i>  
+				</a>
+			</td>
+		</tr>
+	{% endfor %}
+	</tbody>
+</table>
+
+{%= footer(c) %}
+
+{% endfunc %}

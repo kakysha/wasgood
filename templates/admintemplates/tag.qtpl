@@ -1,0 +1,81 @@
+{% import (
+	"wasgood/models"
+	"github.com/gin-gonic/gin"
+) %}
+
+{% func Tag(c *gin.Context, tag *models.Tag) %}
+
+{%= header(c) %}
+
+<form data-type="json" class="form-horizontal" method="POST" enctype="multipart/form-data" action="{%= url("/admin/tags") %}">
+	<fieldset>
+		<legend>
+			Tag
+		</legend>
+		<div class="span7">
+			<div class="control-group">
+				<label class="control-label">
+					ID
+				</label>
+				<div class="controls">
+					<input class="input-xlarge disabled" type="text" placeholder="{%d tag.ID %}" disabled=""/>
+					<input name="id" type="hidden" value="{%d tag.ID %}"/>
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label">
+					Name
+				</label>
+				<div class="controls">
+					<input name="name" type="text" class="input-xlarge" value="{%s tag.Name %}"/>
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label">
+					Slug
+				</label>
+				<div class="controls">
+					<input name="slug" type="text" class="input-xlarge" value="{%s tag.Slug %}"/>
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label">
+					Description
+				</label>
+				<div class="controls">
+					<textarea name="description" id="cleditor">
+						{%s tag.Description %}
+					</textarea>
+				</div>
+			</div>
+			<div class="control-group images-block">
+				<label class="control-label">
+					Logo
+				</label>
+				<div class="controls span6" id="uniform-fileInput">
+					<input class="input-file uniform_on" id="images" type="file" size="19"/>
+					<button type="button" class="btn btn-primary upload" data-post-url="{%= url("/admin/tags/") %}{%d tag.ID %}/images?field=logo">
+						Upload
+					</button>
+				</div>
+				{% if tag.Logo != "" %}
+				<span class="img span2" data-src="{%s tag.Logo %}">
+					<img src="{%s tag.Logo %}"/>
+					<a class="remove" href="{%= url("/admin/tags/") %}{%d tag.ID %}/images/{%u tag.Logo %}?field=logo">X</a>
+				</span>
+				{% endif %}
+			</div>
+		</div>
+		<div class="form-actions span11">
+			<div class="span7">
+				<button type="submit" class="btn btn-primary">
+					Save changes
+				</button>
+			</div>
+		</div>
+	</fieldset>
+</form>
+
+{%= footer(c) %}
+
+{% endfunc %}

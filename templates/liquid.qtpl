@@ -1,0 +1,49 @@
+{% import (
+	"github.com/gin-gonic/gin"
+	"wasgood/models"
+) %}
+
+{% code
+type LiquidPage struct {
+	Page
+	Liquid *models.Liquid
+	RelativeItems []*models.Item
+}
+%}
+
+{% func Liquid(c *gin.Context, p *LiquidPage) %}
+{%= header(c, &p.Page) %}
+{% code item := p.Liquid %}
+<div class="content item single-item" data-item-id="{%d item.ID %}">
+	<div class="uk-panel uk-panel-box">
+		
+		{%= itemPart(&item.Item, c) %}
+		
+		<div class="uk-width-3-3 uk-width-medium-2-3 uk-push-1-3">
+			{% if len(item.Flavors) > 0 %}
+				<div class="flavors uk-grid">
+					{% for _, flavor := range item.Flavors %}
+						<span class="block">
+							<i class="uk-icon-hashtag"></i>
+							<a href="{%= url("/flavor/") %}{%s flavor.Slug %}">{%s flavor.Name %}</a>
+						</span>
+					{% endfor %}
+				</div>
+			{% endif %}
+
+			{% if len(p.RelativeItems) > 0 %}
+				<div class="uk-margin uk-margin-large-top uk-h4">от бренда <a class="brand uk-text-primary" href="{%= url("/brand/") %}{%s item.Brand.Slug %}">{%s item.Brand.Name %}</a>:</div>
+				<div class="uk-grid relative_items rating-list uk-grid-match" data-uk-grid-margin>
+					{% for _, item := range p.RelativeItems %}
+						{%= squareItemBlock(item) %}
+					{% endfor %}
+				</div>
+			{% endif %}
+		</div>
+	</div>
+	<div class="uk-panel uk-panel-box uk-panel-header">
+		{%= reviewsBlock(c, &item.Item) %}
+	</div>
+</div>
+{%= footer(c, &p.Page) %}
+{% endfunc %}

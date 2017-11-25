@@ -1,0 +1,135 @@
+{% import (
+	"github.com/gin-gonic/gin"
+	"wasgood/models"
+	"wasgood/controllers/auth"
+) %}
+
+{% code
+type ItemPage struct {
+	Page
+	Item *models.Item
+}
+%}
+
+{% func itemPart(item *models.Item, c *gin.Context) %}
+<div class="uk-grid uk-grid-small {% if item.Hidden %}hidden{% endif %}">
+	<ul class="uk-width-1-3 images uk-grid uk-grid-small" data-uk-grid-margin>
+		{% if len(item.Images) > 0 %}
+			{% for _, image := range item.Images %}
+				<li class="uk-width-1-1 uk-width-medium-1-2"><a href="{%s image %}" data-uk-lightbox="{group:'item-images'}"><img src="{%s image %}"/></a></li>
+			{% endfor %}
+		{% elseif item.Brand.Logo != "" %}
+			<li class="uk-width-1-1 uk-width-medium-1-2"><img src="{%= url(item.Brand.Logo) %}"/></li>
+		{% endif %}
+	</ul>
+
+	<div class="uk-width-3-6">
+		<div class="title">
+			<h1 class="uk-display-inline-block name">{%s item.Name %}</h1>
+			 от <span class="uk-h3"><a class="brand uk-text-primary" href="{%= url("/brand/") %}{%s item.Brand.Slug %}">{%s item.Brand.Name %}</a></span>
+			 {% code u := models.GetUserFromContext(c) %}
+			 {% if u != nil && (u.IsAdmin || auth.HasACLRights(c, item)) %}[
+			 	<span><a href="{%= url("/admin/liquids/") %}{%d item.ID %}" target="_blank">Edit</a></span>
+			 ]{% endif %}
+		</div>
+		<div class="description">
+			<p>
+				{% if item.Description != "" %}
+					{%s= item.Description %}
+				{% else %}
+					{%s= item.Brand.Description %}
+				{% endif %}
+			</p>
+		</div>
+	</div>
+
+	{%= itemRatingBlock(item, "uk-flex-middle uk-flex-center") %}
+</div>
+{% endfunc %}
+
+{% func squareItemBlock(item *models.Item) %}
+<div class="uk-width-medium-1-6 uk-width-1-3 item {% if item.Hidden %}hidden{% endif %}" data-item-id="{%d item.ID %}">
+	<figure class="uk-overlay uk-overlay-hover">
+		<img class="uk-overlay-scale" src="{% if len(item.Images) > 0 %}{%s item.Images[0] %}{% else %}{%= url("/images/bottle-200x200.png") %}{% endif %}" alt="{%s item.Brand.Name %} / {%s item.Name %}">
+		<div class="uk-overlay-panel uk-overlay-background uk-overlay-bottom uk-ignore">
+			<p>{%s item.Name %}: {%d item.Rating %}</p>
+		</div>
+		<a class="uk-position-cover" href="{%= url("/liquids/") %}{%d item.ID %}-{%s item.Slug() %}" title="{%s item.Brand.Name %} / {%s item.Name %}"></a>
+	</figure>
+</div>
+{% endfunc %}
+
+{% func reviewsBlock(c *gin.Context, item *models.Item) %}
+	{% code user := models.GetUserFromContext(c) %}
+	<!-- COMMENT LIST start here 
+	================================================== -->
+	
+	<div class="uk-panel-title">
+		{%d len(item.Reviews) %} отзывов
+	</div>
+
+	<ul class="uk-comment-list">
+	{% for _, review := range item.Reviews %}
+		<li>
+		<article class="uk-comment {% if !review.Approved %}unapproved{% endif %} review" id="review-{%d review.ID %}">
+			<header class="uk-comment-header">
+				<img class="uk-comment-avatar avatar" src="{%s review.Author.Photo %}" alt="">
+				<h4 class="uk-comment-title username">{%s review.Author.Name %}</h4>
+				<div class="uk-comment-meta">
+					{%v review.Timestamp.Format("2006-01-02 15:04") %}
+					{% if user != nil && user.IsAdmin %}
+					<span class="actions">
+						<a href="{%= url("/admin/reviews/") %}{%d review.ID %}" class="delete">удалить</a>
+						{% if !review.Approved %}<a href="{%= url("/admin/reviews/") %}{%d review.ID %}/approve" class="approve">аппрувнуть</a>{% endif %}
+					</span>
+					{% endif %}
+				</div>
+			</header>
+			<div class="uk-comment-body text">{%s review.Text %}</div>
+		</article>
+		</li>
+	{% endfor %}
+	</ul>
+
+	{% if user != nil %}
+		<form class="uk-form" action="{%= url("/items/") %}{%d item.ID %}/review?redirect={%u c.Request.URL.String() %}" method="post" id="commentform">
+			<article class="uk-comment uk-grid uk-grid-small" data-uk-grid-match>
+				<header class="uk-comment-header uk-width-1-6">
+					<img class="uk-comment-avatar avatar" src="{%s user.Photo %}" alt="">
+					<h4 class="uk-comment-title username">{%s user.Name %}</h4>
+				</header>
+				<div class="uk-comment-body uk-width-4-6"><textarea class="uk-width-1-1" style="height: 100%" name="text" id="comment" placeholder="текст вашего отзыва..."></textarea></div>
+				<input class="uk-width-1-6 uk-button" name="submit" type="submit" value="Submit"/>
+			</article>
+		</form>
+	{% else %}
+		<div class="uk-flex uk-flex-middle">
+			<div class="uk-margin-small-right">Чтобы оставить отзыв: </div>
+			<div class="login-vk uk-margin-small-right">
+				<a class="uk-button uk-button-primary" href="{%= url("/auth/vk/login") %}?redirect={%u c.Request.URL.String() %}" title="Sign in with VK">
+					Войти <span class="uk-hidden-small">через</span> <i class="uk-icon-vk"></i>
+				</a>
+			</div> 
+			<div class="login-fb">
+				<a class="uk-button uk-button-primary" href="{%= url("/auth/fb/login") %}?redirect={%u c.Request.URL.String() %}" title="Sign in with Facebook">
+					Войти <span class="uk-hidden-small">через</span> <i class="uk-icon-facebook-square"></i>
+				</a>
+			</div>
+		</div>
+	{% endif %}
+{% endfunc %}
+
+{% func Item(c *gin.Context, p *ItemPage) %}
+{%= header(c, &p.Page) %}
+{% code item := p.Item %}
+<div class="content item" data-item-id="{%d item.ID %}">
+	<div class="uk-panel uk-panel-box">
+		{%= itemPart(item, c) %}
+	</div>
+	<div class="uk-panel uk-panel-box uk-panel-header">
+		<div class="uk-panel-title">Отзывы</div>
+		{%= reviewsBlock(c, item) %}
+	</div>
+</div>
+{%= footer(c, &p.Page) %}
+{% endfunc %}

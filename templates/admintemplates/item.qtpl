@@ -1,0 +1,114 @@
+{% import (
+	"wasgood/models"
+	"github.com/gin-gonic/gin"
+) %}
+
+{% func itemPart(item *models.Item) %}
+<!-- images -->
+{% if item.ID != 0 %}
+<div class="span4 pull-right images-block">
+	<div class="control-group">
+		<div class="images sortable" data-sort-url="{%= url("/admin/items/") %}{%d item.ID %}/images/sort">
+			{% for _, src := range item.Images %}
+				<span class="img" data-src="{%s src %}">
+					<img src="{%s src %}"/>
+					<a class="remove" href="{%= url("/admin/items") %}/{%d item.ID %}/images/{%u src %}">X</a>
+				</span>
+			{% endfor %}
+		</div>
+		<div class="uploader" id="uniform-fileInput">
+			<input class="input-file uniform_on" id="images" type="file" size="19" multiple="multiple"/>
+		</div>
+		<button type="button" class="btn btn-primary upload" data-post-url="{%= url("/admin/items/") %}{%d item.ID %}/images">
+				Upload
+		</button>
+	</div>
+</div>
+{% endif %}
+<div class="span7">
+	<div class="control-group">
+		<label class="control-label">ID</label>
+		<div class="controls">
+			<input class="input-xlarge disabled" type="text" placeholder="{%d item.ID %}" disabled="">
+			<input name="id" type="hidden" value="{%d item.ID %}" >
+		</div>
+	</div>
+			
+	<div class="control-group">
+		<label class="control-label">
+			<a href="{%= url("/admin/tags") %}">Brand</a>
+		</label>
+		<div class="controls">
+			<select data-rel="chosen" name="brand" class="span7">
+				{% for id, brand := range models.GetAllTagsForField("brand") %}
+				<option value="{%d id %}"
+				{% if item.Brand.ID == id %}selected{% endif %}
+				>{%s brand.Name %}
+				</option>
+				{% endfor %}
+			</select>
+		</div>
+	</div>
+	
+	<div class="control-group">
+		<label class="control-label">Name</label>
+		<div class="controls">
+			<input name="name:string" type="text" class="input-xlarge" value="{%s item.Name %}" required>
+		</div>
+	</div>
+		
+
+	<div class="control-group">
+		<label class="control-label">Description</label>
+		<div class="controls">
+			<textarea name="description" id="cleditor">{%s item.Description %}</textarea>
+		</div>
+	</div>
+
+	<div class="control-group">
+		<label class="control-label">Hidden</label>
+		<div class="controls">
+			<input name="hidden" {% if item.Hidden %}checked{% endif %} data-no-uniform="true" type="checkbox" class="iphone-toggle" value="true"> <!-- value is just a text that will be sent as param value when this is checked -->
+		</div>
+	</div>
+</div>
+{% endfunc %}
+
+{% func Item(c *gin.Context, item *models.Item) %}
+
+{%= header(c) %}
+
+<form data-type="json" class="form-horizontal" method="POST" enctype="multipart/form-data">
+	<fieldset>
+		<legend>
+			Item
+		</legend>
+		{%= itemPart(item) %}
+		
+		<div class="form-actions span11">
+			<div class="span7">
+				<button type="submit" class="btn btn-primary">
+					Save changes
+				</button>
+			</div>
+			<div class="span2">
+				<span class="icon-arrow-left">
+				</span>
+				<a href="{%= url("/admin/items/") %}{%d item.ID-1 %}">
+					Prev
+				</a>
+			</div>
+			<div class="span2">
+				<a href="{%= url("/admin/items/") %}{%d item.ID+1 %}">
+					Next
+				</a>
+				<span class="icon-arrow-right">
+				</span>
+			</div>
+		</div>
+	</fieldset>
+</form>
+
+{%= footer(c) %}
+
+{% endfunc %}

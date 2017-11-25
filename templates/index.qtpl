@@ -1,0 +1,111 @@
+{% import (
+	"github.com/gin-gonic/gin"
+	"wasgood/models"
+) %}
+
+{% code
+	type IndexPage struct {
+		Page
+		BestItems []*models.Item
+		WorstItems []*models.Item
+		BestBrands []*models.Tag
+		WorstBrands []*models.Tag
+		BestFlavors []*models.Tag
+		WorstFlavors []*models.Tag
+	}
+%}
+
+{% func tagRatingBlock(tag *models.Tag, field string) %}
+<div class="uk-grid uk-grid-small uk-flex-middle uk-overflow-hidden">
+	<div class="uk-width-1-6 thumbnail">
+		<a href="{%= url("/"+field+"/") %}{%s tag.Slug %}" title="{%s tag.Name %}">
+			<img src="{% if tag.Logo != "" %}{%s tag.Logo %}{% else %}{%= url("/images/bottle-200x200.png") %}{% endif %}" alt="{%s tag.Name %}" class="uk-border-rounded" />
+		</a>
+	</div>
+	<div class="uk-width-3-6">
+		<div>
+			<a href="{%= url("/"+field+"/") %}{%s tag.Slug %}" title="{%s tag.Name %}" class="uk-h4 uk-text-bold no-decoration name">
+				{%s tag.Name %}
+			</a>
+		</div>
+	</div>
+	<div class="uk-width-2-6 uk-flex uk-flex-top uk-flex-right">
+		<div class="total uk-margin-small-left
+			{% if tag.Rating > 0 %}uk-text-success{% elseif tag.Rating < 0 %}uk-text-danger{% endif %} uk-h3 uk-text-bold">{%d tag.Rating %}</div>
+	</div>
+</div>
+{% endfunc %}
+
+{% func Index(c *gin.Context, p *IndexPage) %}
+{%= header(c, &p.Page) %}
+<div class="content">
+	<h2 class="uk-text-center">Жидкости</h2>
+	<div class="uk-grid uk-grid-match">
+		<div class="uk-width-medium-1-2 uk-margin-small-top">
+			<div class="uk-panel uk-panel-box uk-panel-header rating-list">
+				<div class="uk-panel-title">Лучшие</div>
+				<div class="uk-panel-badge uk-badge uk-badge-success">TOP 10</div>
+				{% for _, item := range p.BestItems %}
+					{%= itemBlock(item) %}
+				{% endfor %}
+				<hr>
+				<a class="uk-align-right" href="{%= url("/rating/good") %}">все лучшие →</a>
+			</div>
+		</div>
+		<div class="uk-width-medium-1-2 uk-margin-small-top">
+			<div class="uk-panel uk-panel-box uk-panel-header rating-list">
+				<div class="uk-panel-title">Худшие</div>
+				<div class="uk-panel-badge uk-badge uk-badge-danger">TOP 10</div>
+				{% for _, item := range p.WorstItems %}
+					{%= itemBlock(item) %}
+				{% endfor %}
+				<hr>
+				<a class="uk-align-right" href="{%= url("/rating/bad") %}">все худшие →</a>
+			</div>
+		</div>
+	</div>
+	<h2 class="uk-text-center">Бренды</h2>
+	<div class="uk-grid uk-grid-match">
+		<div class="uk-width-medium-1-2 uk-margin-small-top">
+			<div class="uk-panel uk-panel-box uk-panel-header rating-list">
+				<div class="uk-panel-title">Лучшие</div>
+				<div class="uk-panel-badge uk-badge uk-badge-success">TOP 10</div>
+				{% for _, tag := range p.BestBrands %}
+					{%= tagRatingBlock(tag, "brand") %}
+				{% endfor %}
+			</div>
+		</div>
+		<div class="uk-width-medium-1-2 uk-margin-small-top">
+			<div class="uk-panel uk-panel-box uk-panel-header rating-list">
+				<div class="uk-panel-title">Худшие</div>
+				<div class="uk-panel-badge uk-badge uk-badge-danger">TOP 10</div>
+				{% for _, tag := range p.WorstBrands %}
+					{%= tagRatingBlock(tag, "brand") %}
+				{% endfor %}
+			</div>
+		</div>
+	</div>
+	<h2 class="uk-text-center">Вкусы</h2>
+	<div class="uk-grid uk-grid-match">
+		<div class="uk-width-medium-1-2 uk-margin-small-top">
+			<div class="uk-panel uk-panel-box uk-panel-header rating-list">
+				<div class="uk-panel-title">Лучшие</div>
+				<div class="uk-panel-badge uk-badge uk-badge-success">TOP 10</div>
+				{% for _, tag := range p.BestFlavors %}
+					{%= tagRatingBlock(tag, "flavor") %}
+				{% endfor %}
+			</div>
+		</div>
+		<div class="uk-width-medium-1-2 uk-margin-small-top">
+			<div class="uk-panel uk-panel-box uk-panel-header rating-list">
+				<div class="uk-panel-title">Худшие</div>
+				<div class="uk-panel-badge uk-badge uk-badge-danger">TOP 10</div>
+				{% for _, tag := range p.WorstFlavors %}
+					{%= tagRatingBlock(tag, "flavor") %}
+				{% endfor %}
+			</div>
+		</div>
+	</div>
+</div>
+{%= footer(c, &p.Page) %}
+{% endfunc %}
